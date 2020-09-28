@@ -1,9 +1,18 @@
 import axios from "axios";
 import parse from "html-react-parser";
 import Cast from "../../components/Cast";
+import Error from "next/error";
+import {
+  withAuthorization,
+  withAuthServerSideProps,
+} from "../../utils/withAuthorization";
 
-const ShowDetails = ({ show = {} }) => {
+const ShowDetails = ({ show = {}, statusCode }) => {
   const { name, image, summary, _embedded } = show;
+
+  if (statusCode) {
+    return <Error statusCode={statusCode} />;
+  }
 
   return (
     <div className="show-details">
@@ -25,17 +34,58 @@ const ShowDetails = ({ show = {} }) => {
   );
 };
 
-export const getServerSideProps = async ({ query }) => {
-  const { showId } = query;
+const getComponentServerSideProps = async (props) => {
+  try {
+    const { showId } = props.query;
+    const response = await axios.get(
+      `https://api.tvmaze.com/shows/${showId}?embed=cast`
+    );
 
-  const response = await axios.get(
-    `https://api.tvmaze.com/shows/${showId}?embed=cast`
-  );
-
-  return {
-    props: {
-      show: response.data,
-    },
-  };
+    return {
+      props: {
+        show: response.data,
+      },
+    };
+  } catch (error) {
+    return {
+      statusCode: error.response ? error.response.status : 500,
+    };
+  }
 };
-export default ShowDetails;
+
+export const getServerSideProps = withAuthServerSideProps(
+  getComponentServerSideProps
+);
+
+export default withAuthorization(ShowDetails);
+
+// export const getServerSideProps = async (props) => {
+//   try {
+//     const { showId } = props.query;
+//     const response = await axios.get(
+//       `https://api.tvmaze.com/shows/${showId}?embed=cast`
+//     );
+
+//     return {
+//       props: {
+//         show: response.data,
+//       },
+//     };
+//   } catch (error) {
+//     return {
+//       statusCode: error.response ? error.response.status : 500,
+//     };
+//   }
+// };
+// // export const getServerSideProps = async ({ query }) => {
+// //   // const { showId } = query;
+// //   // const response = await axios.get(
+// //   //   `https://api.tvmaze.com/shows/${showId}?embed=cast`
+// //   // );
+// //   // return {
+// //   //   props: {
+// //   //     show: response.data,
+// //   //   },
+// //   // };
+// // };
+// export default withAuthorization(ShowDetails);

@@ -1,8 +1,6 @@
 import Router from "next/router";
 
-export default function Home({ test }) {
-  return <div>Hello hi {process.browser}</div>;
-}
+const Home = () => null;
 
 export const getServerSideProps = (context) => {
   const country = context.query.country || "us";
@@ -18,3 +16,5 @@ export const getServerSideProps = (context) => {
   //   },
   // };
 };
+
+export default Home;

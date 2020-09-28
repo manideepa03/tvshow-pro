@@ -8,42 +8,33 @@ import validEmail from "../utils/validators/validateEmail";
 import validateRequired from "../utils/validators/validateRequired";
 import Link from "next/link";
 const initialState = {
+  name: "",
   email: "",
   password: "",
 };
 
-const Signin = () => {
-  const [signinInfo, setSigninInfo] = useState(initialState);
+const Signup = () => {
+  const [signupInfo, setSignupInfo] = useState(initialState);
   const [error, setError] = useState("");
   const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { email, password } = signinInfo;
+    const { email, password, name } = signupInfo;
 
-    if (!email || !password) {
+    if (!email || !password || !name) {
       return;
     }
 
     try {
       const response = await axios.post(
-        "https://iwallet-api.herokuapp.com/api/auth/signin",
-        { ...signinInfo }
+        "https://iwallet-api.herokuapp.com/api/auth/signup",
+        { ...signupInfo }
       );
 
       cookies.set(null, "token", response.data.token, { path: "/" });
-
-      const { plannedRoute } = cookies.get();
-      // convert the cookies tring into the object
-
-      const parsedPlannedRoute = plannedRoute && JSON.parse(plannedRoute);
-      const plannedHrefRoute = parsedPlannedRoute
-        ? parsedPlannedRoutee.href
-        : "/[country]";
-      const plannedAsRoute = parsedPlannedRoute ? parsedPlannedRoute.as : "/us";
-
-      router.replace(plannedHrefRoute, plannedAsRoute);
+      router.replace("/[country]", "/us");
       console.log("Signin", response);
     } catch (error) {
       console.log("Errror", error);
@@ -55,8 +46,8 @@ const Signin = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    setSigninInfo({
-      ...signinInfo,
+    setSignupInfo({
+      ...signupInfo,
       [name]: value,
     });
   };
@@ -66,10 +57,18 @@ const Signin = () => {
     <div className="signin">
       <form onSubmit={handleSubmit}>
         <CustomInput
+          type="name"
+          name="name"
+          placeholder="Enter your Name"
+          value={signupInfo.name}
+          onChange={handleInputChange}
+          onBlur={validateRequired}
+        />
+        <CustomInput
           type="email"
           name="email"
           placeholder="Enter your email"
-          value={signinInfo.email}
+          value={signupInfo.email}
           onChange={handleInputChange}
           onBlur={validEmail}
         />
@@ -77,28 +76,28 @@ const Signin = () => {
           type="password"
           name="password"
           placeholder="Enter your password"
-          value={signinInfo.password}
+          value={signupInfo.password}
           onChange={handleInputChange}
           onBlur={validateRequired}
         />
 
         {error && <div className="error">{error}</div>}
 
-        <Link href="/signup">
-          <a> Create an account </a>
+        <Link href="/signin">
+          <a> Already have an account ?</a>
         </Link>
 
         {/* <input
           name="email"
           placeholder="Email"
-          value={signinInfo.email}
+          value={signupInfo.email}
           onChange={handleInputChange}
         ></input> */}
         {/* <input
           name="password"
           placeholder="Password"
           type="password"
-          value={signinInfo.password}
+          value={signupInfo.password}
           onChange={handleInputChange}
         ></input> */}
 
@@ -108,4 +107,4 @@ const Signin = () => {
   );
 };
 
-export default Signin;
+export default Signup;
